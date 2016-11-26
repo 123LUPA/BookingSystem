@@ -17,7 +17,7 @@ namespace BookingSystemFinalProject.Controllers
         private ResturantContext db = new ResturantContext();
 
         // GET: Restaurants
-
+        [Authorize(Roles = "Administrator")]
         public ActionResult Index()
         {
             return View(db.Restaurants.ToList());

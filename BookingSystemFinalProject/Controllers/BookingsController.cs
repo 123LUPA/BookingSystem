@@ -49,10 +49,18 @@ namespace BookingSystemFinalProject.Controllers
         }
 
         // GET: Bookings/Create
+        [AllowAnonymous]
         public ActionResult Create()
         {
+            //List<String> restaurants = new List<string>();
 
-            ViewBag.restaurant = restaurantContext.Restaurants.ToList();
+            var restaurants = from a in restaurantContext.Restaurants
+                           select a.Name;
+
+
+
+            ViewBag.restaurant = restaurants;
+
 
             return View();
         }
