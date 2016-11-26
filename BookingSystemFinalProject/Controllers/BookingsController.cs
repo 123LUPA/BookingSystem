@@ -75,14 +75,14 @@ namespace BookingSystemFinalProject.Controllers
             var id = User.Identity.GetUserId();
             booking.UserId = id;
 
-            if (ModelState.IsValid)
-            {
+           // if (ModelState.IsValid)
+          //  {
                 db.Bookings.Add(booking);
                 db.SaveChanges();
                 return RedirectToAction("Index");
-            }
+         //   }
 
-            return View(booking);
+          //  return View(booking);
         }
 
         // GET: Bookings/Edit/5
