@@ -1,4 +1,8 @@
-﻿using System;
+﻿using BookingSystemFinalProject.Models;
+using BookingSystemFinalProject.Models.Abstract;
+using BookingSystemFinalProject.Models.Repositories;
+using Microsoft.AspNet.Identity;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -6,17 +10,28 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
-using BookingSystemFinalProject.Models;
-using Microsoft.AspNet.Identity;
+
 
 namespace BookingSystemFinalProject.Controllers
 {
-
     [Authorize]
     public class BookingsController : Controller
     {
-        private BookingContext db = new BookingContext();
         private ResturantContext restaurantContext = new ResturantContext();
+
+
+        private IBookingRepository bookingRepository;
+
+        public BookingsController()
+        {
+            this.bookingRepository = new BookingRepository(new BookingContext());
+        }
+
+        public BookingsController(IBookingRepository bookingRepo)
+        {
+            this.bookingRepository = bookingRepo;
+
+        }
 
         // GET: Bookings
         public ActionResult Index()
@@ -25,8 +40,7 @@ namespace BookingSystemFinalProject.Controllers
 
             var id = User.Identity.GetUserId();
 
-
-            var bookings = from a in db.Bookings
+            var bookings = from a in bookingRepository.getAllBookings()
                            where a.UserId.Contains(id)
                            select a;
 
@@ -34,17 +48,10 @@ namespace BookingSystemFinalProject.Controllers
         }
 
         // GET: Bookings/Details/5
-        public ActionResult Details(int? id)
+        public ViewResult Details(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Booking booking = db.Bookings.Find(id);
-            if (booking == null)
-            {
-                return HttpNotFound();
-            }
+            
+            Booking booking = bookingRepository.findBooking(id);
             return View(booking);
         }
 
@@ -52,14 +59,18 @@ namespace BookingSystemFinalProject.Controllers
         [AllowAnonymous]
         public ActionResult Create()
         {
-            //List<String> restaurants = new List<string>();
-
-            var restaurants = from a in restaurantContext.Restaurants
-                           select a.Name;
 
 
+            var restaurantsId = from a in restaurantContext.Restaurants
+                           select a.Id;
 
-            ViewBag.restaurant = restaurants;
+
+
+            
+            ViewBag.DropDownValues1 = new SelectList(restaurantsId);
+
+         
+
 
 
             return View();
@@ -72,17 +83,20 @@ namespace BookingSystemFinalProject.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "ID,RestaurantId,BookingDate,MyProperty,NumberOfPeople")] Booking booking)
         {
+            
+
             var id = User.Identity.GetUserId();
             booking.UserId = id;
 
-           // if (ModelState.IsValid)
-          //  {
-                db.Bookings.Add(booking);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-         //   }
+            if (ModelState.IsValid)
+            {
+                bookingRepository.Insert(booking);
+                bookingRepository.Save();
 
-          //  return View(booking);
+                    return RedirectToAction("Index");
+            }
+
+            return View(booking);
         }
 
         // GET: Bookings/Edit/5
@@ -92,11 +106,14 @@ namespace BookingSystemFinalProject.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Booking booking = db.Bookings.Find(id);
+            Booking booking = bookingRepository.findBooking(id);
+
             if (booking == null)
             {
                 return HttpNotFound();
             }
+
+            bookingRepository.Update(booking);
             return View(booking);
         }
 
@@ -109,8 +126,9 @@ namespace BookingSystemFinalProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(booking).State = EntityState.Modified;
-                db.SaveChanges();
+                bookingRepository.Update(booking);
+                bookingRepository.Save();
+
                 return RedirectToAction("Index");
             }
             return View(booking);
@@ -123,7 +141,8 @@ namespace BookingSystemFinalProject.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Booking booking = db.Bookings.Find(id);
+            Booking booking = bookingRepository.findBooking(id);
+           
             if (booking == null)
             {
                 return HttpNotFound();
@@ -134,21 +153,23 @@ namespace BookingSystemFinalProject.Controllers
         // POST: Bookings/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
+        public ActionResult DeleteConfirmed(int? id)
         {
-            Booking booking = db.Bookings.Find(id);
-            db.Bookings.Remove(booking);
-            db.SaveChanges();
+
+           Booking booking = bookingRepository.findBooking(id);
+
+           bookingRepository.Delete(id);
+            bookingRepository.Save();
+
             return RedirectToAction("Index");
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
+            bookingRepository.Dispose();
             base.Dispose(disposing);
         }
+
+
     }
 }

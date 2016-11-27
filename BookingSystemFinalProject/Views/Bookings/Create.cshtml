@@ -30,8 +30,6 @@
 </head>
 
 
-
-
 <div>
 
     @Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })
@@ -53,15 +51,13 @@
             </div>
 
             <div class="col-xs-2 ">
-                @Html.TextBoxFor(model => model.BookingDate, htmlAttributes: new { id = "date", placeholder = "MM/DD/YYY", type = "text"  })
+                @Html.TextBoxFor(model => model.BookingDate, htmlAttributes: new { id = "datetimepicker1", placeholder = "MM/DD/YYY", type = "text"  })
 
             </div>
-            <div class="col-xs-2">
-                <input class="form-control" placeholder="17:30" type="text" />
-
-            </div>
+       
             <div class="col-xs-2">
    
+                @Html.DropDownListFor(model => model.RestaurantId, (SelectList)ViewBag.DropDownValues1)
 
             </div>
             <div class="col-xs-2">
@@ -73,26 +69,11 @@
 
 }
 
-
-     
-
-
-
-
-
-
-
-        <script>
-            $(document).ready(function () {
-                var date_input = $('#date'); //our date input has the name "date"
-                var container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
-                date_input.datepicker({
-                    format: 'mm/dd/yyyy',
-                    container: container,
-                    todayHighlight: true,
-                    autoclose: true,
-                })
-            })
+  
+        <script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker({  format: 'DD-MM-YYYY HH:mm:ss' });
+            });
         </script>
 
 
@@ -105,6 +86,7 @@
             @Html.ActionLink("Back to List", "Index")
         </div>
 
-        @section Scripts {
+        @section Scripts 
+        {
             @Scripts.Render("~/bundles/jqueryval")
         }
